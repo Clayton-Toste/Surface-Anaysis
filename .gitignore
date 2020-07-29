@@ -32,5 +32,6 @@
 *.app
 
 bin/*
-!bin/pymol
-!bin/fetch.py
+!bin/PyMOL
+!bin/data/.gitkeep
+!bin/proteins/.gitkeep
