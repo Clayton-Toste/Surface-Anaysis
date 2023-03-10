@@ -62,7 +62,7 @@ inline std::size_t vertex_hash::operator()(Vertex * const & other) const
     return ((hash<double>()(other->x))>>1)^
            ((hash<double>()(other->y))   )^
            ((hash<double>()(other->z))<<1);
-};
+}
 
 inline std::size_t vertex_hash::operator()(int const & x, int const & y, int const & z) const
 {
@@ -70,16 +70,16 @@ inline std::size_t vertex_hash::operator()(int const & x, int const & y, int con
     return ((hash<double>()(x))>>1)^
            ((hash<double>()(y))   )^
            ((hash<double>()(z))<<1);
-};
+}
 
 inline bool vertex_hash::operator()(Vertex * const & rhs, Vertex * const & lhs) const
 {
     return (lhs->x==rhs->x&&
             lhs->y==rhs->y&&
             lhs->z==rhs->z);
-};
+}
 
 inline bool vertex_set::operator()(Vertex * const & rhs, Vertex * const & lhs) const
 {
     return lhs->distance > rhs->distance;
-};
+}

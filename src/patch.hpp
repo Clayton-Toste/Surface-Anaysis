@@ -18,7 +18,6 @@ struct Patch {
     };
     double area {0}; 
     char classification;
-    bool selected {false};
     Vertex * center_vertex {nullptr};
     std::unordered_set<Vertex *, vertex_hash, vertex_hash> core, rim;
     std::list<Patch *> touching;

@@ -1,8 +1,45 @@
-#include "surface_anaysis.hpp"
+#include "surface_analysis.hpp"
 
 using namespace std;
 
-inline char Surface_Anaysis::classification_from_color(double r, double g, double b)
+inline void saSurface_Analysis::handle_meta()
+{
+    if (!wxDirExists("data/"+data_name))
+        wxMkdir("data/"+data_name);
+    ofstream data_file {"data/"+data_name+"/"+".data"};
+    data_file<<protein_name<<"\n";
+    switch (select_type)
+    {
+    case all:
+        data_file<<"all"<<"\n";
+        break;
+    case outer:
+        data_file<<"outer"<<"\n";
+        break;
+    case custom:
+        data_file<<"custom"<<"\n";
+        data_file<<selector_x<<'\n';
+        data_file<<selector_y<<'\n';
+        data_file<<selector_z<<'\n';
+        data_file<<selector_radius<<'\n';
+    }
+    data_file.close();
+    string line;
+    if (select_type == custom)
+    {
+        ifstream file("proteins/"+protein_name+"/.protein");
+        file>>line;
+        file>>line;
+        selector_x -= stod(line);
+        file>>line;
+        selector_y -= stod(line);
+        file>>line;
+        selector_z -= stod(line);
+        file.close();
+    }
+}
+
+inline const char saSurface_Analysis::classification_from_color(const double r, const double g, const double b) const
 {
     double best_score {.75*r+.75*b-.0625};
     char best_classification {'-'};
@@ -14,20 +51,20 @@ inline char Surface_Anaysis::classification_from_color(double r, double g, doubl
     if (r > best_score)
     {
         best_score = r;
-        best_classification = 'i';
+        best_classification = 'o';
     }
     if (b > best_score)
     {
         best_score = b;
-        best_classification = 'o';
+        best_classification = 'i';
     }
     return best_classification;
-};
+}
 
-inline void Surface_Anaysis::make_face(Vertex * vertex1, Vertex * vertex2, Vertex * vertex3)
+inline void saSurface_Analysis::make_face(Vertex * const vertex1, Vertex * const vertex2, Vertex * const vertex3)
 {
     double a, b, c, s, area;
-    auto ptr = vertex1->touching.find(vertex2);
+    auto ptr = vertex1->touching.find(vertex2); 
     if(ptr == vertex1->touching.end())
     {
         a = vertex1->distance_to(vertex2);
@@ -59,17 +96,18 @@ inline void Surface_Anaysis::make_face(Vertex * vertex1, Vertex * vertex2, Verte
     vertex1->area += area;
     vertex2->area += area;
     vertex3->area += area;
-};
+}
 
-inline void Surface_Anaysis::read_wrl()
+inline void saSurface_Analysis::read_wrl()
 {
     ifstream file("proteins/"+protein_name+"/"+protein_name+".wrl");
     if (!file)
         throw runtime_error("Error opening file.");
     list<Vertex *> vertices_data;
     list<char> color_data;
-    double best_x, best_y, best_z {0};
     string line, a, b, c;
+    Vertex * best_vertex {nullptr};
+    double best_score {select_type==custom ? selector_radius : 0};
     while (line!="point")
         file>>line;
     file>>line;
@@ -82,6 +120,12 @@ inline void Surface_Anaysis::read_wrl()
         file>>b>>c;
         c=c.substr(0, c.length()-1);
         Vertex vertex{stod(a), stod(b), stod(c)};
+        double score {select_type == custom ? vertex.distance_to(selector_x, selector_y, selector_z) : vertex.y};
+        if (select_type == custom && score > selector_radius)
+        {
+            vertices_data.push_back(nullptr);
+            continue;
+        }
         auto search = vertices_dict.find(&vertex);
         if (search != vertices_dict.end())
         {
@@ -91,13 +135,14 @@ inline void Surface_Anaysis::read_wrl()
         vertices.push_back(vertex);
         vertices_dict.emplace(&vertices.back());
         vertices_data.push_back(&vertices.back());
-        if (select_type == custom && best_y<vertex.y)
+        if ((select_type == custom && score < best_score) || (select_type == outer && score > best_score))
         {
-            best_x=vertex.x;
-            best_y=vertex.y;
-            best_z=vertex.z;
+            best_vertex = &vertices.back();
+            best_score = score;
         }
     }
+    if (select_type != all)
+        selected_vertex = best_vertex;
     while (line != "color")
         file>>line;
     file>>line>>line>>line>>line;
@@ -110,35 +155,32 @@ inline void Surface_Anaysis::read_wrl()
         c=c.substr(0, 6);
         color_data.push_back(classification_from_color(stod(a), stod(b), stod(c)));
     }
-    if (select_type == custom)
-    {
-        ifstream file("proteins/"+protein_name+"/.protein");
-        file>>line;
-        selector_x += best_x - stod(line);
-        file>>line;
-        selector_y += best_y - stod(line);
-        file>>line;
-        selector_z += best_z - stod(line);
-    }
     list<Vertex *>::iterator vertex_ptr{vertices_data.begin()};
     list<char>::iterator color_ptr{color_data.begin()};
     Vertex * vertex1, * vertex2, * vertex3;
     while (vertex_ptr != vertices_data.end())
     {
-        (vertex1 = *vertex_ptr)->classification = *color_ptr;
+        vertex1 = *vertex_ptr;
+        if (vertex1)
+            vertex1->classification = *color_ptr;
         ++vertex_ptr;
         ++color_ptr;
-        (vertex2 = *vertex_ptr)->classification = *color_ptr;
+        vertex2 = *vertex_ptr;
+        if (vertex2)
+            vertex2->classification = *color_ptr;
         ++vertex_ptr;
         ++color_ptr;
-        (vertex3 = *vertex_ptr)->classification = *color_ptr;
+        vertex3 = *vertex_ptr;
+        if (vertex3)
+            vertex3->classification = *color_ptr;
         ++vertex_ptr;
         ++color_ptr;
-        make_face(vertex1, vertex2, vertex3);
+        if (vertex1 && vertex2 && vertex3)
+            make_face(vertex1, vertex2, vertex3);
     }
-};
+}
 
-inline void Surface_Anaysis::build_patches()
+inline void saSurface_Analysis::build_patches()
 {
     queue<Vertex *> edge;
     for (Vertex & start : vertices)
@@ -180,7 +222,7 @@ inline void Surface_Anaysis::build_patches()
     }
 }
 
-inline void Surface_Anaysis::build_patches_distances()
+inline void saSurface_Analysis::build_patches_distances()
 {
     set<Vertex *, vertex_set> edge;
     for (Patch & patch : patches)
@@ -222,7 +264,7 @@ inline void Surface_Anaysis::build_patches_distances()
     }
 }
 
-inline void Surface_Anaysis::build_centers()
+inline void saSurface_Analysis::build_centers()
 {
     for (Patch & patch : patches)
     {
@@ -266,47 +308,7 @@ inline void Surface_Anaysis::build_centers()
     }
 }
 
-inline void Surface_Anaysis::filter_patches()
-{
-    Patch * best_patch {nullptr};
-    double best_score {select_type==outer ? -INFINITY : INFINITY};
-    if (select_type==outer)
-        patches.remove_if(
-            [=, &best_patch, &best_score](Patch & value) -> bool 
-            {
-                if (!value.center_vertex)
-                    return true;
-                if(value.center_vertex->y>best_score)
-                {
-                    best_score = value.center_vertex->y;
-                    best_patch = &value;
-                }
-                return false;
-            }
-        );
-    else
-        patches.remove_if(
-            [=, &best_patch, &best_score](Patch & value) -> bool 
-            {
-                if (!value.center_vertex)
-                    return true;
-                double dist {value.center_vertex->distance_to(selector_x, selector_y, selector_z)};
-                if (dist<selector_radius)
-                {
-                    if(dist<best_score)
-                    {
-                        best_score = dist;
-                        best_patch = &value;
-                    }
-                    return false;
-                }
-                return true;
-            }
-        );
-    best_patch->selected=true;
-}
-
-inline void Surface_Anaysis::build_surfaces()
+inline void saSurface_Analysis::build_surfaces()
 {
     queue<Patch *> edge;
     if (select_type==all)
@@ -325,24 +327,20 @@ inline void Surface_Anaysis::build_surfaces()
                     }
         }
     else
-        for (Patch & patch : patches)
-        {
-            if (!patch.selected)
-                continue;
-            patch.surface = &(surfaces.emplace_back(list<Patch *> {&patch}));
-            for (edge.push(&patch); !edge.empty(); edge.pop())
-                for (Patch * & touch : edge.front()->touching)
-                    if (!touch->surface)
-                    {
-                        (touch->surface=patch.surface)->push_back(touch);
-                        touch->center_vertex->is_center=true;
-                        edge.push(touch);
-                    }
-            break;
-        }
+    {
+        selected_vertex->patch->surface = &(surfaces.emplace_back(list<Patch *> {selected_vertex->patch}));
+        for (edge.push(selected_vertex->patch); !edge.empty(); edge.pop())
+            for (Patch * & touch : edge.front()->touching)
+                if (!touch->surface)
+                {
+                    (touch->surface=selected_vertex->patch->surface)->push_back(touch);
+                    touch->center_vertex->is_center=true;
+                    edge.push(touch);
+                }
+    }
 }
 
-inline void Surface_Anaysis::build_distances()
+inline void saSurface_Analysis::build_distances()
 {
     for (list<Patch *> & surface : surfaces)
     {
@@ -392,41 +390,27 @@ inline void Surface_Anaysis::build_distances()
     }
 }
 
-inline void const Surface_Anaysis::write_files()
+inline void saSurface_Analysis::write_files() const
 {
-    if (!wxDirExists("data/"+data_name))
-        wxMkdir("data/"+data_name);
     ofstream sizes_file {"data/"+data_name+"/"+"sizes"};
     ofstream distances_file {"data/"+data_name+"/"+"distances"};
-    ofstream data_file {"data/"+data_name+"/"+".data"};
-    data_file<<protein_name<<"\n";
-    switch (select_type)
-    {
-    case all:
-        data_file<<"all"<<"\n";
-        break;
-    case outer:
-        data_file<<"outer"<<"\n";
-        break;
-    case custom:
-        data_file<<"custom"<<"\n";
-        break;
-    }
     for (auto & surface : surfaces)
         for (auto first = surface.begin(); first != surface.end(); ++first)
         {
             auto second = first;
             for (++second; second != surface.end(); ++second)
                 if ((*first)->classification == (*second)->classification)
-                    distances_file<<(*first)->classification<<" "<<distances[make_pair((*first)->center_vertex, (*second)->center_vertex)]<<" "<<"\n";
+                    distances_file<<(*first)->classification<<" "<<distances.at(make_pair((*first)->center_vertex, (*second)->center_vertex))<<"\n";
             sizes_file<<(*first)->classification<<" "<<(*first)->area<<"\n";
         }
 }
 
 
-void Surface_Anaysis::run()
+void saSurface_Analysis::run()
 {
     auto start = high_resolution_clock::now();
+    handle_meta();
+    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     read_wrl();
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_patches();
@@ -435,16 +419,11 @@ void Surface_Anaysis::run()
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_centers();
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
-    if (select_type != all)
-    {
-        filter_patches();
-        cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
-    }
     build_surfaces();
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_distances();
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     write_files();
     cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
-};
+}
 
