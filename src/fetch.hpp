@@ -18,7 +18,7 @@ void saFetch(wxString protein_name, wxString protein_identifier, bool isFile=fal
     else
         cout<<wxMkdir("proteins/"+protein_name);
     wxSetWorkingDirectory("proteins/"+protein_name);
-    string temp{"wine ../../PyMOL/python.exe ../../fetch.py "};
+    string temp{"../../PyMOL/python.exe ../../fetch.py "};
     temp += '\"' + protein_name + "\" \"" + protein_identifier + "\" " + (isFile ? 'f' : 'c');
     char * command = new char [temp.length()+1];
     strcpy(command, temp.c_str());

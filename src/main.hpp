@@ -106,7 +106,7 @@ class saFrame : public wxFrame, public List_Base
         graph->load_data();
     };
 
-    std::vector<saSurface_Analysis *> to_analyse;
+    std::queue<saSurface_Analysis>    to_analyze;
     std::vector<wxString>        proteins, datas;               
 
     List_Ctrl    * const data_list_ctrl    { new List_Ctrl  ( this, this ) };

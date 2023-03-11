@@ -23,9 +23,9 @@ using namespace std::chrono;
 
 enum saSELECT_TYPE
 {
-        all, 
-        outer, 
-        custom
+        ALL, 
+        OUTER, 
+        CUSTOM
 };
 
 class saSurface_Analysis
@@ -57,7 +57,7 @@ public:
                       double selector_radius=NAN) 
                       : protein_name{protein_name}, data_name{data_name}, select_type{select_type}, selector_x{selector_x}, selector_y{selector_y}, selector_z{selector_z}, selector_radius{selector_radius} 
     {
-        if ( select_type==custom && (selector_x==NAN || selector_y==NAN || selector_z==NAN || selector_radius==NAN) )
+        if ( select_type==CUSTOM && (selector_x==NAN || selector_y==NAN || selector_z==NAN || selector_radius==NAN) )
             throw domain_error("Selectype Custom But no selector info.");
     };
     void run();

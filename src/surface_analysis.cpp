@@ -10,13 +10,13 @@ inline void saSurface_Analysis::handle_meta()
     data_file<<protein_name<<"\n";
     switch (select_type)
     {
-    case all:
+    case ALL:
         data_file<<"all"<<"\n";
         break;
-    case outer:
+    case OUTER:
         data_file<<"outer"<<"\n";
         break;
-    case custom:
+    case CUSTOM:
         data_file<<"custom"<<"\n";
         data_file<<selector_x<<'\n';
         data_file<<selector_y<<'\n';
@@ -25,7 +25,7 @@ inline void saSurface_Analysis::handle_meta()
     }
     data_file.close();
     string line;
-    if (select_type == custom)
+    if (select_type == CUSTOM)
     {
         ifstream file("proteins/"+protein_name+"/.protein");
         file>>line;
@@ -107,7 +107,7 @@ inline void saSurface_Analysis::read_wrl()
     list<char> color_data;
     string line, a, b, c;
     Vertex * best_vertex {nullptr};
-    double best_score {select_type==custom ? selector_radius : 0};
+    double best_score {select_type==CUSTOM ? selector_radius : 0};
     while (line!="point")
         file>>line;
     file>>line;
@@ -120,8 +120,8 @@ inline void saSurface_Analysis::read_wrl()
         file>>b>>c;
         c=c.substr(0, c.length()-1);
         Vertex vertex{stod(a), stod(b), stod(c)};
-        double score {select_type == custom ? vertex.distance_to(selector_x, selector_y, selector_z) : vertex.y};
-        if (select_type == custom && score > selector_radius)
+        double score {select_type == CUSTOM ? vertex.distance_to(selector_x, selector_y, selector_z) : vertex.y};
+        if (select_type == CUSTOM && score > selector_radius)
         {
             vertices_data.push_back(nullptr);
             continue;
@@ -135,13 +135,13 @@ inline void saSurface_Analysis::read_wrl()
         vertices.push_back(vertex);
         vertices_dict.emplace(&vertices.back());
         vertices_data.push_back(&vertices.back());
-        if ((select_type == custom && score < best_score) || (select_type == outer && score > best_score))
+        if ((select_type == CUSTOM && score < best_score) || (select_type == OUTER && score > best_score))
         {
             best_vertex = &vertices.back();
             best_score = score;
         }
     }
-    if (select_type != all)
+    if (select_type != ALL)
         selected_vertex = best_vertex;
     while (line != "color")
         file>>line;
@@ -311,7 +311,7 @@ inline void saSurface_Analysis::build_centers()
 inline void saSurface_Analysis::build_surfaces()
 {
     queue<Patch *> edge;
-    if (select_type==all)
+    if (select_type==ALL)
         for (Patch & patch : patches)
         {
             if (patch.surface)
@@ -410,20 +410,20 @@ void saSurface_Analysis::run()
 {
     auto start = high_resolution_clock::now();
     handle_meta();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "handle_meta:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     read_wrl();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "read_wrl:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_patches();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_patches:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_patches_distances();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_patches_distances:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_centers();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_centers:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_surfaces();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_surfaces:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     build_distances();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_distances:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
     write_files();
-    cout << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "write_files:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
 }
 

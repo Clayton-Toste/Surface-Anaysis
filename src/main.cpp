@@ -1,7 +1,7 @@
 #include "main.hpp"
 
 BEGIN_EVENT_TABLE(List_Ctrl, wxListCtrl)
- EVT_LIST_ITEM_SELECTED(ID_List_Ctrl, List_Ctrl::event)
+EVT_LIST_ITEM_SELECTED(ID_List_Ctrl, List_Ctrl::event)
 END_EVENT_TABLE()
 
 bool saApp::OnInit()
@@ -15,10 +15,8 @@ bool saApp::OnInit()
     return true;
 }
 
-saFrame::saFrame() : wxFrame(NULL, wxID_ANY, "Surface_Anaysis")
-{
-    //saSurface_Analysis("1ump-TYR-O", "1ump-TYR-O", outer).run();
-    
+saFrame::saFrame() : wxFrame(NULL, wxID_ANY, "Surface_Analysis")
+{   
     SetInitialSize(wxSize(1000, 1000));
     
     wxMenu * menuFile {new wxMenu};
@@ -28,9 +26,9 @@ saFrame::saFrame() : wxFrame(NULL, wxID_ANY, "Surface_Anaysis")
                      "Load Protein Local File.");
     wxMenu * menuAnalyze {new wxMenu};
     menuAnalyze->Append(ID_Analyze, "&Analyze...\tCtrl-A",
-                     "todo.");
+                     "Add an analysis to the queue.");
     menuAnalyze->Append(ID_Run, "&Run...\tCtrl-R",
-                     "todo.");
+                     "Run all analyses in the queue.");
     wxMenuBar * menuBar {new wxMenuBar};
     menuBar->Append(menuFile, "&Protein");
     menuBar->Append(menuAnalyze, "&Analyze");
@@ -77,8 +75,7 @@ saFrame::saFrame() : wxFrame(NULL, wxID_ANY, "Surface_Anaysis")
 
 void saFrame::populate_lists( )
 {
-    cout<<get_current_dir_name()<<endl;
-    int i {0};
+    int i{0};
     for (wxString f = wxFindFirstFile("proteins/*", wxDIR); !f.empty(); f = wxFindNextFile())
     {
         proteins.push_back(f.substr(9, f.size()));
@@ -102,8 +99,6 @@ void saFrame::on_from_PDB(wxCommandEvent& event)
     {
         return ;
     }
-    cout<<name<<endl;
-    cout<<code<<endl;
     saFetch(name, code);
     populate_lists();
 }
@@ -122,29 +117,35 @@ void saFrame::on_from_file(wxCommandEvent& event)
 
 void saFrame::on_analyze(wxCommandEvent& event)
 {
-    saDialog * dialog {new saDialog(this)};
+    saDialog dialog {this, proteins};
 
-    dialog->Show(true);
+    if (dialog.ShowModal() == wxID_OK)
+    {
+        switch (dialog.mode_select->GetSelection())
+        {
+        case 0:
+            to_analyze.emplace(string(proteins[dialog.protein_choice->GetSelection()]), string(dialog.analyze_name->GetLineText(0)), OUTER);
+            break;
+        case 1:
+            to_analyze.emplace(string(proteins[dialog.protein_choice->GetSelection()]), string(dialog.analyze_name->GetLineText(0)), ALL);
+            break;
+        case 2:
+            to_analyze.emplace(string(proteins[dialog.protein_choice->GetSelection()]), string(dialog.analyze_name->GetLineText(0)), CUSTOM, 
+                stoi(string(dialog.selector_numbers[0]->GetLineText(0))), stoi(string(dialog.selector_numbers[1]->GetLineText(0))), 
+                stoi(string(dialog.selector_numbers[2]->GetLineText(0))), stoi(string(dialog.selector_numbers[3]->GetLineText(0))));
+            break;
+        }
+    }
+
 }
 
 void saFrame::on_run(wxCommandEvent& event)
 {
-    for (int i=i; i<to_analyse.size(); ++i)
+    while (!to_analyze.empty())
     {
-        if (to_analyse[i] == nullptr)
-            continue ;
-        saSurface_Analysis & surface_analysis = *to_analyse[i];
+        saSurface_Analysis surface_analysis = to_analyze.front();
         SetStatusText("Runing analysis for "+surface_analysis.protein_name+'.');
         surface_analysis.run();
-        free(to_analyse[i]);
-        to_analyse[i] = nullptr;
+        to_analyze.pop();
     }
 }
-
-
-
-//saFetch("1ump", "1ump", false);
-//saSurface_Anaysis SA {"1ump", nullptr, true};
-//saSurface_Anaysis SA {"1ump", "ligand site", nullptr, 65.32363357543946, 70.78283309936523, 27.32430734619454, 15.3};
-//SA.run();
-//saGraph("ligand site", 'i', false, false, false, "temp.png");

@@ -1,6 +1,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include <wx/wxprec.h>
 #include <wx/wx.h>
@@ -52,6 +53,7 @@ public:
 
 class saDialog : public wxDialog
 {
+public:
     wxChoice *protein_choice;
     wxTextCtrl *analyze_name;
     Mode_Dialog *mode_select;
@@ -61,6 +63,5 @@ class saDialog : public wxDialog
 
     wxString static const mode_choices[3];
 
-public:
-    saDialog(wxWindow *parent);
+    saDialog(wxWindow *parent, std::vector<wxString> &proteins);
 };

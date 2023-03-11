@@ -17,7 +17,7 @@ END_EVENT_TABLE()
 
 void Start_Button::event(wxCommandEvent &event)
 {
-    parent->Destroy();
+    parent->EndModal(wxID_OK);
 }
 
 BEGIN_EVENT_TABLE(Number_Dialog, wxTextCtrl)
@@ -47,17 +47,13 @@ void Number_Dialog::event(wxCommandEvent &event)
 
 wxString const saDialog::mode_choices[3]{"Outer", "All", "Custom"};
 
-saDialog::saDialog(wxWindow *parent) : wxDialog(parent, wxID_ANY, "Start Surface Analysis")
+saDialog::saDialog(wxWindow *parent, std::vector<wxString> &proteins) : wxDialog(parent, wxID_ANY, "Start Surface Analysis")
 {
-    wxString choices[1]{
-        "test",
-    };
-
     wxBoxSizer *main_sizer{new wxBoxSizer(wxVERTICAL)};
     wxBoxSizer *name_sizer{new wxBoxSizer(wxHORIZONTAL)};
     wxBoxSizer *select_sizer{new wxBoxSizer(wxHORIZONTAL)};
 
-    protein_choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 1, choices);
+    protein_choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, proteins.size(), &proteins[0]);
     analyze_name = new wxTextCtrl(this, wxID_ANY);
     mode_select = new Mode_Dialog(this, select_sizer, 3, mode_choices);
     start = new Start_Button(this);
@@ -98,6 +94,4 @@ saDialog::saDialog(wxWindow *parent) : wxDialog(parent, wxID_ANY, "Start Surface
     SetSizer(main_sizer);
 
     select_sizer->Show(false);
-
-    //Destroy();
 }
