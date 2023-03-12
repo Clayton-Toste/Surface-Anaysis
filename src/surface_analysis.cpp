@@ -345,7 +345,7 @@ inline void saSurface_Analysis::build_distances()
     for (list<Patch *> & surface : surfaces)
     {
         set<Vertex *, vertex_set> edge;
-        unsigned int to_check {surface.size()+1}, checked {1};
+        long unsigned int to_check {surface.size()+1u}, checked {1};
         Vertex * start {(*surface.begin())->center_vertex};
         for (start->check=0; --to_check; checked=1)
         {

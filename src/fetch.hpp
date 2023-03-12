@@ -15,8 +15,6 @@ void saFetch(wxString protein_name, wxString protein_identifier, bool isFile=fal
             cout<<"Protein, "+protein_name+", already exists, skiping"<<endl;
             return;
         }
-    else
-        cout<<wxMkdir("proteins/"+protein_name);
     wxSetWorkingDirectory("proteins/"+protein_name);
     string temp{"../../PyMOL/python.exe ../../fetch.py "};
     temp += '\"' + protein_name + "\" \"" + protein_identifier + "\" " + (isFile ? 'f' : 'c');

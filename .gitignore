@@ -38,3 +38,15 @@ bin/*
 !bin/PyMOL
 !bin/data/.gitkeep
 !bin/proteins/.gitkeep
+
+# CMake
+Makefile
+CMakeFiles
+cmake_install.cmake
+CMakeCache.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+CTestTestfile.cmake
+DartConfiguration.tcl
+Testing
+build
