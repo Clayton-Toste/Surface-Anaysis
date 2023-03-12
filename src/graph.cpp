@@ -226,7 +226,7 @@ inline void Graph_Panel::load_data( )
     data[2] = data[0];
     data[3] = data[0];
     string path = "data/"+(string)data_name+"/"+(mode_choice->GetSelection() ? "distances" : "sizes");
-    ifstream file{path};
+    ifstream file(path);
     if (!file)
         throw runtime_error("Error opening file.");
     string temp;

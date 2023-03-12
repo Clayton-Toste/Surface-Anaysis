@@ -80,7 +80,7 @@ void saFrame::populate_lists( )
     {
         proteins.push_back(f.substr(9, f.size()));
         string path=(string)f+"/.protein";
-        ifstream file {path};
+        ifstream file(path);
         string code;
         file>>code;
         file.close();

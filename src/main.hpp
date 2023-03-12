@@ -52,7 +52,7 @@ public:
         {
             wxString name = f.substr(5, f.size());
             string path = (string)f+"/.data";
-            ifstream file {path};
+            ifstream file(path);
             getline(file, line);
             if (line!=event.GetItem().GetText())
                 continue;
