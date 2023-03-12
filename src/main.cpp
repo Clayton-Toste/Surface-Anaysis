@@ -79,7 +79,8 @@ void saFrame::populate_lists( )
     for (wxString f = wxFindFirstFile("proteins/*", wxDIR); !f.empty(); f = wxFindNextFile())
     {
         proteins.push_back(f.substr(9, f.size()));
-        ifstream file {f+"/.protein"};
+        string path=(string)f+"/.protein";
+        ifstream file {path};
         string code;
         file>>code;
         file.close();

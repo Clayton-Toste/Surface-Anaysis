@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <functional>
 
-class Patch;
+struct Patch;
 
 struct Vertex;
 

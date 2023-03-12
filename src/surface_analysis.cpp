@@ -345,7 +345,7 @@ inline void saSurface_Analysis::build_distances()
     for (list<Patch *> & surface : surfaces)
     {
         set<Vertex *, vertex_set> edge;
-        long unsigned int to_check {surface.size()+1u}, checked {1};
+        unsigned long int to_check=surface.size()+1u, checked=1;
         Vertex * start {(*surface.begin())->center_vertex};
         for (start->check=0; --to_check; checked=1)
         {
@@ -408,22 +408,22 @@ inline void saSurface_Analysis::write_files() const
 
 void saSurface_Analysis::run()
 {
-    auto start = high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     handle_meta();
-    cout << "handle_meta:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "handle_meta:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     read_wrl();
-    cout << "read_wrl:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "read_wrl:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     build_patches();
-    cout << "build_patches:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_patches:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     build_patches_distances();
-    cout << "build_patches_distances:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_patches_distances:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     build_centers();
-    cout << "build_centers:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_centers:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     build_surfaces();
-    cout << "build_surfaces:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_surfaces:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     build_distances();
-    cout << "build_distances:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "build_distances:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
     write_files();
-    cout << "write_files:" << duration_cast<microseconds>(high_resolution_clock::now() - start).count() << endl;
+    cout << "write_files:" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() << endl;
 }
 

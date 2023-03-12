@@ -18,9 +18,6 @@
 
 #include <wx/filefn.h> 
 
-using namespace std;
-using namespace std::chrono; 
-
 enum saSELECT_TYPE
 {
         ALL, 
@@ -43,14 +40,14 @@ class saSurface_Analysis
     const saSELECT_TYPE select_type;
     double selector_x, selector_y, selector_z, selector_radius;
     Vertex * selected_vertex;
-    list<Vertex> vertices;
-    list<Patch>  patches;
-    unordered_map<pair<Vertex *, Vertex *>, double> distances;
-    list<list<Patch*>> surfaces;
+    std::list<Vertex> vertices;
+    std::list<Patch>  patches;
+    std::unordered_map<std::pair<Vertex *, Vertex *>, double> distances;
+    std::list<std::list<Patch*>> surfaces;
 public:
-    const string protein_name;
-    const string data_name;
-    saSurface_Analysis(string protein_name, string data_name, saSELECT_TYPE select_type,
+    const std::string protein_name;
+    const std::string data_name;
+    saSurface_Analysis(std::string protein_name, std::string data_name, saSELECT_TYPE select_type,
                       double selector_x=NAN, 
                       double selector_y=NAN, 
                       double selector_z=NAN, 
@@ -58,7 +55,7 @@ public:
                       : protein_name{protein_name}, data_name{data_name}, select_type{select_type}, selector_x{selector_x}, selector_y{selector_y}, selector_z{selector_z}, selector_radius{selector_radius} 
     {
         if ( select_type==CUSTOM && (selector_x==NAN || selector_y==NAN || selector_z==NAN || selector_radius==NAN) )
-            throw domain_error("Selectype Custom But no selector info.");
+            throw std::domain_error("Selectype Custom But no selector info.");
     };
     void run();
 };

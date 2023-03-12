@@ -218,14 +218,15 @@ inline void Graph_Panel::default_title( )
 
 inline void Graph_Panel::load_data( )
 {
-    if (not data_name)
+    if (!data_name)
         return ;
     default_title( );
     set<double> * data[4] {new set<double>};
     data[1] = data[0];
     data[2] = data[0];
     data[3] = data[0];
-    ifstream file{(string)"data/"+data_name+"/"+(string)(mode_choice->GetSelection() ? "distances" : "sizes")};
+    string path = "data/"+(string)data_name+"/"+(mode_choice->GetSelection() ? "distances" : "sizes");
+    ifstream file{path};
     if (!file)
         throw runtime_error("Error opening file.");
     string temp;
