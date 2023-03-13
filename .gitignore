@@ -34,10 +34,7 @@
 # VS Code
 .vscode
 
-bin/*
-!bin/PyMOL
-!bin/data/.gitkeep
-!bin/proteins/.gitkeep
+bin/*/*/**
 
 # CMake
 Makefile
